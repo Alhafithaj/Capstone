@@ -1,0 +1,121 @@
+---
+title: "Gold_price"
+author: "Abulmohsen Alhafith"
+date: "18\x0F/2\x0F/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+```
+
+## Loading Packages
+```{r }
+library(tidyverse)     # for data manipulation
+library(rio)           # for importing data
+library(caTools)       # for splittin the data 
+```
+## Impoting Data
+```{r importing data}
+gold_price<- import("data/gold.csv")
+
+
+```
+
+## Exploring the Data 
+```{r}
+summary(gold_price)
+
+
+head(gold_price)
+tail(gold_price)
+```
+This data has the prices of gold in US Dollar from January 1950 to June 2020 and published by https://datahub.io/core/gold-prices .
+
+## Sitting up the Data 
+
+```{r change the date to numbers}
+r<- c(1:length(gold_price$Date))     # a set of number represent the number of the months 
+
+
+gold_price$Date <- r   # change date column  to number 
+
+
+head(gold_price)         
+```
+
+
+
+
+## Splitting the Data 
+```{r Splitting the data}
+training <- gold_price[1:677, ]              # training set 
+testing  <- gold_price[678:847, ]            #  testing set 
+
+
+summary(training)
+summary(testing)
+
+```
+
+
+## Correlation
+```{r correlation}
+cor(gold_price$Date,gold_price$Price)            # to find the correlation
+```
+ There is strong correlation between the predictor variable and the respone variable.
+
+## Model the Training Set with Linear Regression
+```{r model the training set with linear regression }
+model<- lm(formula = Price ~ Date, data = training)         # Price is the dependent variable and Date is independent variable  
+
+
+summary (model)
+
+```
+
+We get the intercept is -31.1 and the slope is 0.722. 
+when date increase by 1 the price would increse by .722.
+
+## Predicting
+```{r Predicting }
+modeltest<-predict(model, newdata = testing)
+
+
+```
+
+
+```{r form new data to compare the model to the acutal values }
+t<-data.frame(testing$Date,testing$Price,modeltest)
+```
+
+##  Visualizing Training Set
+
+```{r Visualizing training set }
+ggplot()+
+  geom_point(aes(training$Date , y=training$Price), colour='red' ) +   # to plot the acutal values of training set
+  geom_line (aes(x=training$Date, y= predict(model, newdata = training )) , colour= 'navy')+  # to plot the model for training set
+  
+  ggtitle ('Price of gold over time for training set   ' )+
+  xlab('time')+ ylab('price') 
+  
+
+  
+
+```
+
+
+## Visualizing Testing set 
+```{r Visualizing testing set }
+ggplot()+
+  geom_point(aes(t$testing.Date , y=t$testing.Price), colour='red' ) +   # to plot the acutal values of testing set
+  geom_line (aes(x=t$testing.Date, y= t$modeltest ) , colour= 'navy')+  # to plot the model form training set in testing set 
+  
+  ggtitle ('Price of gold over time for tseting set   ' )+
+  xlab('time')+ ylab('price') 
+  
+
+  
+
+```
